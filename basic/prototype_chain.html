@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>原型与原型链</title>
+    <link rel="stylesheet" href="../static/css/basic.css">
+</head>
+<body>
+    <div class="container">
+        <h1>原型与原型链</h1>
+
+        <p>1.首先理解javascript的思想： “一切皆对象”。</p>
+        <i>---当然，也不是所有的都是对象。值类型就不是对象。</i>
+        <p>2.要判断类型，javascript给出了两个函数  <span>typeof | instanceof() 。</span>   </p>
+        <p>3.其实<span>typeof()</span>大多用于原始值类型的判断， <span>instanceof()</span> 大多用于引用类型的判断。</p>
+        <i>---当然也有其它方法，后面会提到。</i>
+        <p>4.一切引用类型都是对象，对象是属性的集合。</p>
+        <p>5.对象都是通过函数创建的。</p>
+        <p>6.每一个函数都带有 <span>prototype</span> 属性，而创建对象时却没有。</p>
+        <p>7.每一个对象都带有 <span>__proto__</span> 属性，指向创建该对象的函数的  <span>prototype</span>。</p>
+        <i>---<span>Object.prototype</span> 的 <span>__proto__</span> 指向 <span>null</span></i>
+
+        <h3>代码调试参见  F12</h3>
+    </div>
+    <div class="img_box">
+        <img src="../static/image/proto_chain.png" alt="原型链">
+    </div>
+    <script>
+        (() => {
+            //利用 typeof 判断类型  只能判断原始值类型  不能判断引用类型
+            //一切引用类型都是对象，对象是属性的集合
+            //对象都是通过函数创建的  
+
+            // let obj = {a: 1, b: 2};  这只是一种快捷方式
+
+            //等同于
+
+            let obj = new Object();
+            obj.a = 1;
+            obj.b = 2;
+
+            //let arr = [1, 2, 3];
+            
+            //等同于
+
+            let arr = new Array();
+            arr[0] = 1;
+            arr[1] = 2;
+            arr[3] = 3;
+
+            function showType() {
+                console.log(typeof 1);              //number
+                console.log(typeof 'abc');          //string
+                console.log(typeof true);           //boolean
+                console.log(typeof [1,2,3]);        //object
+                console.log(typeof {a: 1});         //object
+                console.log(typeof null);           //object
+                console.log(typeof function(){});   //function
+                console.log(typeof new Array());    //object
+                console.log(typeof Array);          //function
+                console.log(typeof Object);         //function
+            }
+            showType();
+
+
+            //利用instanceof  判断类型  它是基于原型链查找的 每一个函数都带有prototype属性 而创建对象的时候却是没有的
+            function showInstanceType() {
+                console.log(1 instanceof Object);
+                console.log('abc' instanceof Object);
+                console.log({a: 1} instanceof Object);
+                console.log(function() {} instanceof Object);
+            }
+            showInstanceType();
+            
+            //每个对象都有一个__proto__属性，指向创建该对象的函数的prototype。
+            //obj这个对象本质上是被Object函数创建的，因此obj.__proto__=== Object.prototype。
+            // Object.prototype确实一个特例——它的__proto__指向的是null，切记切记！
+            console.log(obj.__proto__ === Object.prototype);
+
+            console.log(Function.prototype); // Function
+            console.log(Function.prototype === Object.__proto__);
+
+
+            // 整体的一个原型链
+
+            //创建一个函数
+            function Foo() {}
+            
+            //声明 f1 是函数 Foo 的一个实例对象
+            let f1 = new Foo();
+
+            //f1 的 __proto__ 属性指向创建f1的函数Foo的prototype
+            console.log(f1.__proto__ === Foo.prototype);  //true
+
+            //函数 Foo 的 constructor 属性指向该函数Foo本体
+
+            console.log(Foo.prototype.constructor === Foo);  //true
+
+            //Foo.prototype 的 __proto__ 属性指向 Object.prototype
+            console.log(Foo.prototype.__proto__ === Object.prototype);
+
+            //Foo 是由Function创建的
+            console.log(Foo.__proto__ === Function.prototype);
+
+            //创建一个对象 o1
+            let o1 = new Object();
+
+            //o1 的 __proto__ 指向 Object.prototype
+            console.log(o1.__proto__ === Object.prototype);
+
+            //Object也是 由 Function 创建的
+            console.log(Object.__proto__ === Function.prototype)
+
+            //Function 的 __proto__ 指向自身的 prototype 属性
+            console.log(Function.__proto__ === Function.prototype);
+
+            //Function.prototype 也是 由 Object 创建的
+            console.log(Function.prototype.__proto__ === Object.prototype);
+            
+        })()
+    </script>
+</body>
+</html>
