@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>解读this与作用域链</title>
+    <link rel="stylesheet" href="../static/css/basic.css">
+</head>
+<body>
+    <div class="container">
+        <h1>解读this与作用域链</h1>
+
+        <p>1.当javascript代码执行一段可执行代码时，会创建对应的执行上下文</p>
+        <i>---对于每个执行上下文，都有三个重要的属性</i>
+        <ul class="list">
+            <li>变量对象 <span>Variable object(VO)</span></li>
+            <li>作用域链 <span>Scope chain</span></li>
+            <li>this</li>
+        </ul>
+        <p>2.函数内部有个内部属性 <span>[[scope]] </span>, 当函数创建的时候，就会保存所有父变量到其中</p>
+        <div class="code_box">
+            <h4>
+                <br>
+                function foo() { <br>
+                 &nbsp;   function bar() { <br>
+                    &nbsp;&nbsp;&nbsp;  ... <br>
+                    &nbsp;   } <br>
+                } <br>
+                <br>
+                //函数创建时，各自的[[scope]]为：<br>
+                <br>
+                foo.[[scope]] = [ <br>
+                 &nbsp;   globalContext.Vo <br>
+                ]; <br>
+                <br>
+
+                bar.[[scope]] = [ <br>
+                &nbsp;   fooContext.Ao, <br>
+                &nbsp;    globalContext.Vo <br>
+                ]; <br>
+                <br>
+            </h4>
+        </div>
+
+        <p>3.当函数激活时，进入函数上下文，创建 <span>VO/AO</span> 就会将活动对象添加到作用域的顶端</p>
+        <div class="code_box">
+            <h4>
+                <br>
+                Scope = [AO].concat([[Scope]]); <br>
+                <br>
+                //作用域链创建完毕
+                <br>
+                <br>
+            </h4>
+        </div>
+        <p>举个栗子：</p>
+        <div class="code_box">
+            <h4>
+                <br>
+                var scope = "global scope"; <br>
+                <br>
+                function checkscope() { <br>
+                    <br>
+                &nbsp;    var scope2 = "local scope"; <br>
+                &nbsp;    return scope2; <br>
+                <br>
+                } <br>
+                checkscope(); <br>
+                <br>
+            </h4>
+        </div>
+        <p>执行过程：</p>
+        <p>a. <span>checkscope</span> 函数被创建，保存作用域链到内部属性 <span>[[scope]]</span></p>
+        <div class="code_box">
+            <h4>
+                    <br>
+                    checkscope.[[scope]] = [ <br>
+                    &nbsp;    globalContext.VO <br>
+                    ];  <br>
+                    <br>
+            </h4>
+        </div>
+        <p>b. 执行 <span>checkscope</span> 函数，创建 <span>checkscope</span> 函数执行上下文， <span>checkscope</span> 函数执行上下文被压入执行上下文栈</p>
+
+        <div class="code_box">
+            <h4>
+                <br>
+                ECStack = [ <br>
+                &nbsp;    checkscopeContext, <br>
+                &nbsp;    globalContext <br>
+                ]; <br>
+                <br>
+            </h4>
+        </div>
+
+        <p>c. <span>checkscope</span> 函数并不执行，开始做准备工作，第一步：复制函数 <span>[[scope]]</span>属性创建作用域链</p>
+
+        <div class="code_box">
+            <h4>
+                <br>
+                checkscopeContext = { <br>
+                &nbsp;    Scope: checkscope.[[scope]], <br>
+                } <br>
+                <br>
+            </h4>
+        </div>
+
+        <p>
+            d. 第二步： 用 <span>arguments</span> 创建活动对象，随后初始化活动对象，加入形参、函数声明、变量声明
+        </p>
+
+        <div class="code_box">
+            <h4>
+                <br>
+                checkscopeContext = { <br>
+                &nbsp;     AO: {  <br>
+                &nbsp;&nbsp;        arguments: {  <br>
+                &nbsp;&nbsp;            length: 0  <br>
+                &nbsp;&nbsp;     },  <br>
+                &nbsp;        scope2: undefined  <br>
+                &nbsp;    }, <br>
+                &nbsp;   Scope: checkscope.[[scope]], <br>
+                } <br>
+                <br>
+            </h4>
+        </div>
+        <p>
+            e. 第三步: 将活动对象压入 checkscope 作用域链顶端   
+        </p>
+
+        <div class="code_box">
+            <h4>
+                <br>
+                checkscopeContext = { <br>
+                    AO: { <br>
+                    &nbsp;    arguments: { <br>
+                    &nbsp;&nbsp; length: 0 <br>
+                    &nbsp;    }, <br>
+                    &nbsp;    scope2: undefined <br>
+                    }, <br>
+                    Scope: [AO, [scope]] <br>
+                } <br>
+                <br>
+            </h4>
+        </div>
+
+        <p>
+            f. 准备工作做完，开始执行函数，随着函数的执行，修改AO的属性值     
+        </p>
+
+        <div class="code_box">
+            <h4>
+                <br>
+                checkscopeContext = { <br>
+                    &nbsp;  AO: { <br>
+                    &nbsp;&nbsp;    arguments: { <br>
+                        &nbsp;&nbsp;&nbsp;  length: 0 <br>
+                        &nbsp;&nbsp;    }, <br>
+                        &nbsp;&nbsp;    scope2: 'local scope' <br>
+                    }, <br>
+                    Scope: [AO, [[scope]]] <br>
+                } <br>
+                <br>
+            </h4>
+        </div>
+
+        <p>
+            g. 查找到 <span>scope2</span> 的值，返回后函数执行完毕，函数上下文从执行上下文栈中弹出  
+        </p>
+
+        <div class="code_box" style="margin-bottom: 50px">
+            <h4>
+                <br>
+                ECStack = [ <br>
+                &nbsp;    globalContext <br>
+                ]; <br>
+                <br>
+            </h4>
+        </div>
+    </div>
+    <div class="img_box">
+        <!-- <img src="../static/image/proto_chain.png" alt="原型链"> -->
+    </div>
+    <script>
+        (() => {
+            
+        })()
+    </script>
+</body>
+</html>

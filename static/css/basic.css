@@ -3,18 +3,19 @@
     padding: 0;
     color: rgb(15, 17, 17);
     font-weight: 100;
-    letter-spacing: 4px;
+    letter-spacing: 2px;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 .container{
     margin-left: 3%;
 }
 .container p{
+    width: 80%;
     margin-top: 40px;
-    font-size: 32px;
+    font-size: 28px;
 }
 .container span{
-    color: rgb(177, 197, 145);
+    color: rgb(13, 9, 255);
 }
 .container i{
     display: inline-block;
@@ -37,4 +38,19 @@ h3{
 }
 .img_box img{
     width: 100%;
+}
+.list{
+    margin-left: 5%;
+}
+.list li {
+    margin-top: 15px;
+}
+.code_box{
+    margin: 15px 0;
+    display: inline-block;
+    width: 80%;
+    background: #fceeee;
+}
+h4{
+    margin-left: 6%;  
 }
