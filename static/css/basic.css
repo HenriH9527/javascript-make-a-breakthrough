@@ -3,8 +3,8 @@
     padding: 0;
     color: rgb(15, 17, 17);
     font-weight: 100;
-    letter-spacing: 2px;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    letter-spacing: 1px;
+    font:"Arial","Microsoft YaHei","黑体","宋体",sans-serif;
 }
 .container{
     margin-left: 3%;
@@ -53,4 +53,23 @@ h3{
 }
 h4{
     margin-left: 6%;  
+}
+.code_box p{
+    width: 100%;
+    font-size: 18px;
+}
+.code_box span{
+    color: rgb(110, 110, 110);
+    margin-left: 1%;
+}
+.img{
+    width: 100%;
+    margin: 20px 0;
+}
+.img img{
+    width: 65%;
+
+}
+h2{
+    margin: 20px 0;
 }

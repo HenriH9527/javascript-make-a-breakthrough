@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>作用域链</title>
+    <link rel="stylesheet" href="../static/css/basic.css">
+</head>
+<body>
+    <div class="container">
+        <h1>解读 <span>this</span></h1>
+
+        <h2>一、从规范去解读this</h2>
+        <p>
+            1.首先，老生常谈：当javascript执行一段可执行代码时，会创建对应的执行上下文，每个执行上下文，都有三个重要的属性
+            <ul class="list">
+                <li>变量对象（Variable object, VO）</li>
+                <li>作用域链（Scope Chain）</li>
+                <li>this</li>
+            </ul>
+        </p>
+        <p>
+            2.ECMAScript的类型分为语言类型和规范类型        
+        </p>
+        <p>3.ECMAScript语言类型是开发者直接使用ECMAScript可以操作的，其实就是我们常说的Undefined,Null,Boolean, String, Number, Object</p>
+        <p>4.而规范类型相当于meta-values,是用来用算法描述ECMAScript语言结构和ECMLScript语言类型的。规范类型包括：</p>
+        <ul class="list">
+            <li>Reference</li>
+            <li>List</li>
+            <li>Completion</li>
+            <li>Property Descriptor</li>
+            <li>Property Identifier</li>
+            <li>Lexical Environment</li>
+            <li>Environment Record</li>
+        </ul>
+        <p>5.为了解决今天this的指向问题，我们重点放到规范中的 Reference(引用类型)</p>
+        <p>6.Reference类型是用来解释 delete/typeof等操作行为的，下面是具体介绍</p>
+        <div class="code_box">
+                <p>
+                        <span>A Reference is a resolved name binding</span>
+                    </p>
+                    <p>
+                        <span>A Reference consists of three components,the base value,the referenced name and the Boolean valued strict reference flag.</span>
+                    </p>
+                    <p>
+                        <span>The base value is eighter undefined, an Object, a Boolean, a String, a Number, or an environment record</span>
+                    </p>
+
+                    <p>
+                        <span>
+                            A base value of undefined indicates that the reference could not be resolved to a binding. The referenced name is String 
+                            <br>
+                        </span>
+                        <br>
+                    </p>
+        </div>
+
+        <p>翻译：</p>
+        <p>Reference由三部分构成</p>
+        <ul class="list">
+            <li>base value: 属性所在的对象或者是EnvironmentRecord，它的值可能是undefined, an Object, a Boolean, a String, a Number, or an environment record</li>
+            <li>referenced name: 属性的名称</li>
+            <li>strict reference: 是否是严格模式</li>
+        </ul>
+
+        <p>举个栗子</p>
+
+        <div class="code_box">
+            <h4>
+                <br>
+                var foo = 1; <br>
+                var fooReferenve = { <br>
+                &nbsp;    base: EnvironmentRecord, <br>
+                &nbsp;    name: 'foo',  <br>
+                &nbsp;    strict: false,  <br>
+                } <br>
+                <br>
+            </h4>
+        </div>
+
+        <p>再举个栗子</p>
+
+        <div class="code_box">
+            <h4>
+                <br>
+                var foo = {  <br>
+                &nbsp;    bar: function() { <br>
+                &nbsp;&nbsp;        return this; <br>
+                &nbsp;    } <br>
+                }      <br>   
+                <br>
+                foo.bar(); <br>
+                <br>
+                //bar对用的Reference是： <br>
+                var BarReference = { <br>
+                    &nbsp;    base: foo, <br>
+                    &nbsp;    name: 'bar', <br>
+                    &nbsp;   strict: false, <br>
+                }; <br>
+                <br>
+            </h4>
+        </div>
+
+        <p>在规范中，有两种获取Reference组成部分的方法，比如GetBase 和 IsPropertyReference</p>
+        <div class="code_box">
+                <p>
+                        <span>
+                            GetBase(V): returns the base value cpmponent of the reference V
+                        </span>
+                        <span style="display: inline-block;margin-top: 10px;">
+                            IsPropertyReference: returns true if either the base value is an object or HasPrimitiveBase(V) is true; otherwise returns false
+                            <br>
+                        </span>
+                        <br>
+                        <br>
+                    </p>
+        </div>
+        <i>简单的理解：如果base value 是一个对象，就返回 true</i>
+        
+        <p>函数调用时，如何确定this的值</p>
+
+        <p>规范文档中是这样写的</p>
+
+        <div class="img">
+                <img src="../static/image/reference.png" alt="引用">
+        </div>
+
+        <p>虽然看起来很晦涩，但是认真读几遍，也就八九不离十了</p>
+
+        <p>a. 计算MemberExpression的结果赋值给ref</p>
+        <p>MemberExpression:</p>
+        <ul class="list">
+            <li>PrimaryExpression  //原始表达式</li>
+            <li>FunctionExpression  //函数表达式</li>
+            <li>MemberExpression  //属性访问表达式</li>
+            <li>MemberExpression.IdentifierName  //属性访问表达式</li>
+            <li>new MemberExpression Arguments  //对象创建表达式</li>
+        </ul>
+        <i>简单理解 MemberExpression 其实就是()左边的部分</i>
+
+        <p>b. 判断ref是不是一个Reference类型,关键在于看规范如何入力各种MemberExpression, 返回的结果是不是一个Reference类型</p>
+
+        <p>举个栗子</p>
+
+        <div class="code_box">
+            <h4>
+                <br>
+                var value = 1; <br>
+                var foo = { <br>
+                &nbsp;    value: 2, <br>
+                &nbsp;    bar: function() { <br>
+                    &nbsp;&nbsp;        return this.value; <br>
+                    &nbsp;    }   <br>
+                }   <br>
+                <br>
+                //示例一  <br>
+                console.log(foo.bar()); <br>
+                //示例二  <br>
+                console.log((foo.bar)());<br>
+                //示例三  <br>
+                console.log((foo.bar = foo.bar)());<br>
+                //示例四  <br>
+                console.log((false || foo.bar()));<br>
+                //示例五  <br>
+                console.log((foo.bar, foo.bar)());<br>
+                <br>
+            </h4>
+        </div>
+
+        <p>
+            在示例一种， MemberExpression计算的结果是 foo.bar, 那么foo.bar是不是一个Reference呢？
+        </p>
+
+        <div class="code_box">
+            <p>
+                <span>
+                    Return a value of type Reference whose base value is baseValue and whose refereced name is propertyNameString, and whose strict mode flag is strict
+                    <br>
+                </span>
+                <br>
+            </p>
+        </div>
+
+        <p>得知示例一中，foo.bar 是一个Reference</p>
+
+        <div class="code_box">
+            <h4>
+                <br>
+                var Reference = { <br>
+                &nbsp;    base: foo, <br>
+                &nbsp;    name: 'bar', <br>
+                &nbsp;    strict: false, <br>
+                } <br>
+                <br>
+            </h4>
+        </div>
+        <p>接下来按照规范中的判断流程走</p>
+        <div class="code_box">
+            <p>
+                <span>
+                        如果 ref 是 Reference，并且 IsPropertyReference(ref) 是 true, 那么 this 的值为 GetBase(ref)   <br>
+                </span>
+                <br>
+            </p>
+        </div>
+
+        <p>该值是Reference类型，那么IsPropertyReference(ref)的结果是多少呢?</p>
+        <p>前面已经有铺垫IsPropertyReference方法，如果base value 是一个对象，结果返回true</p>
+        <p>示例一种,base value 为 foo, 是一个对象，所以IsPropertyReference结果为true</p>
+
+        <p>所以，现在可以确定this的值了</p>
+        <div class="code_box">
+            <h4>
+                <br>
+                this = GetBase(ref);<br>
+                <br>
+            </h4>
+        </div>
+        <p>所以示例一的结果就是 2</p>
+
+        <p>实例二 (foo.bar)()</p>
+
+        <p>foo.bar被（）包住，查看规范：</p>
+        <div class="code_box">
+            <p>
+                <span>
+                    Return the result of evaluating Expression,this may be of type Reference
+                </span>
+                <span>
+                    NOTE This algorithm does not apply GetValur to the result of evaluating Expression.
+                </span>
+            </p>
+        </div>
+        <p>实际上，（）并没有对 MemberExpression 进行计算，所以其实跟示例一的结果是一样的</p>
+
+        <p>示例三  (foo.bar = foo.bar)()</p>
+        <p>看示例3，有赋值操作符，查看规范</p>
+        <div class="code_box">
+            <p>
+                <span>
+                    let rval be GetValue(rref) <br>
+                </span>
+                <br>
+            </p>
+        </div>
+
+        <p>因为使用了 GetValue，所以返回的值不是Reference</p>
+        <p>按照之前的判断逻辑:</p>
+        <div class="code_box">
+            <p>
+                <span>如果ref不是Reference, 那么this的值为undefined</span><br>
+                <br>
+            </p>
+        </div>
+
+        <p>this为undefined, 非严格模式下，this的值为undefined的时候，其值会被隐式的转换为全局对象</p>
+
+        <p>示例四  (false || foo.bar)() 示例五 (foo.bar, foo.bar)()</p>
+
+        <p>看规范：</p>
+        <div class="code_box">
+            <p>
+                <span>
+                    Let lval be GetValue(lref); <br>
+                </span>
+                <span>
+                    call GetValue(lref);  <br>
+                </span>
+                <br>
+            </p>
+        </div>
+
+        <p>示例四与示例五，分别使用了逻辑运算符与逗号操作符，所以返回的不是Reference,this为undefined</p>
+
+
+        <h2>二、简单暴力解决this</h2>
+
+        <p>this 的调用场景</p>
+        <div class="code_box">
+            <h4>
+                <br>
+                let obj = { <br>
+                &nbsp;    a: 1,   <br>
+               &nbsp;     b: function() {   <br>
+                &nbsp;&nbsp;&nbsp;        console.log(this);  <br>
+                &nbsp;    }  <br>
+                } <br>
+                <br>
+            </h4>
+        </div>
+        <ul class="list" style="margin-bottom: 80px;">
+            <li>作为对象调用是，this执行该对象obj.b(); //执行obj</li>
+            <li>作为函数调用时.var b = obj.b; b();  //指向全局window</li>
+            <li>作为构造函数调用时,var b = new Fun(); //this指向当前实例对象</li>
+            <li>作为call与apply调用obj.b.apply(object,[]); //this指向当前的object</li>
+        </ul>
+    <div class="img_box">
+        <!-- <img src="../static/image/proto_chain.png" alt="原型链"> -->
+    </div>
+
+    <script>
+        (() => {
+            
+        })()
+    </script>
+</body>
+</html>
