@@ -139,7 +139,7 @@
         </ul>
         <i>简单理解 MemberExpression 其实就是()左边的部分</i>
 
-        <p>b. 判断ref是不是一个Reference类型,关键在于看规范如何入力各种MemberExpression, 返回的结果是不是一个Reference类型</p>
+        <p>b. 判断ref是不是一个Reference类型,关键在于看规范如何处理各种MemberExpression, 返回的结果是不是一个Reference类型</p>
 
         <p>举个栗子</p>
 
@@ -290,7 +290,7 @@
             </h4>
         </div>
         <ul class="list" style="margin-bottom: 80px;">
-            <li>作为对象调用是，this执行该对象obj.b(); //执行obj</li>
+            <li>作为对象调用是，this执行该对象obj.b(); //指向obj</li>
             <li>作为函数调用时.var b = obj.b; b();  //指向全局window</li>
             <li>作为构造函数调用时,var b = new Fun(); //this指向当前实例对象</li>
             <li>作为call与apply调用obj.b.apply(object,[]); //this指向当前的object</li>

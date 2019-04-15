@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>模拟实现call和apply</title>
+    <link rel="stylesheet" href="../static/css/basic.css">
+</head>
+<body>
+    <div class="container">
+        <h1> <span>call</span> 和 <span>apply</span> 的模拟实现</h1>
+        <p>
+            1. call()方法在使用一个指定的this值和若干个指定的参数值的前提下调用某个函数或方法。
+        </p>
+        <div class="code_box">
+            <h4>
+                <br>
+                var foo = { <br>
+                &nbsp;    value: 1, <br>
+                } <br>
+                <br>
+                function bar() { <br>
+                &nbsp;    console.log(this.value);  <br>
+                }  <br>
+                <br>
+                bar.call(foo);  //1 <br>
+                <br>
+            </h4>
+        </div>
+        <p>
+            2.1  call改变了this的指向，指向foo。
+        </p>
+        <p>
+            2.2  bar函数执行了。
+        </p>
+
+        <p>
+            3.模拟实现第一步
+        </p>
+        <i>试想当调用call的时候，把foo对象改造成如下：</i>
+        <div class="code_box">
+            <h4>
+                <br>
+                var foo = { <br>
+                &nbsp;    value: 1, <br>
+                &nbsp;    bar: function() {  <br>
+                &nbsp;&nbsp;&nbsp;    consoe.log(this.value); <br>
+                &nbsp;    } <br>
+                } <br> 
+                 <br>
+                foo.bar(1); <br>
+                <br>
+            </h4>
+        </div>
+        <i>虽然这样是实现了指向问题，但是却给foo添加了属性，这可不行</i>
+        <i>不过也不用担心，我们用delete在删除它就好了</i>
+        <p>4.模拟的步骤可以分为：</p>
+        <ul class="list">
+            <li>
+                将函数设为对象的属性
+            </li>
+            <li>
+                执行该函数
+            </li>
+            <li>
+                删除该函数
+            </li>
+        </ul>
+        <p> 根据这个思路，实现第一版 call2 函数</p>
+        <div class="code_box">
+            <h4>
+                <br>
+                //第一版  <br>
+                Function.prototype.call2 = function(context) { <br>
+                    &nbsp;//首先要获取调用call2函数，用this可以获取 <br>
+                    &nbsp;&nbsp;context.fn = this; <br>
+                    &nbsp;&nbsp;context.fn(); <br>
+                    &nbsp;&nbsp;delete context.fn; <br>
+                } <br>     
+                <br> 
+            </h4>
+        </div>
+        <p>5.模拟实现第二步</p>
+        <i>call函数还能给定参数执行函数，举个栗子：</i>
+        <div class="code_box">
+            <h4>
+                <br>
+                var foo = { <br>
+                &nbsp;    value: 1 <br>
+                }; <br>
+                <br>
+                function bar(name, age) { <br>
+                    &nbsp;    console.log(name); <br>
+                    &nbsp;    console.log(age);  <br>
+                    &nbsp;    console.log(this.value); <br>
+                }  <br>
+                <br>     
+                bar.call(foo, 'jack', 16); <br>
+                <br>
+            </h4>
+        </div>
+        <p>第二版call2函数</p>
+        <div class="code_box">
+            <h4>
+                <br>
+                //第二版 <br>
+                Function.prototype.call2 = function(context) { <br>
+                    &nbsp;context.fn = this; <br>
+                    &nbsp;var args = [];  <br>
+                    &nbsp;for (var i = 0, len = arguments.length; i < len; i++) { <br>
+                    &nbsp;&nbsp;    arg.push('arguments['+ i +']'); <br>
+                    } <br>
+                    &nbsp;eval('context.fn(' + args +')'); <br>
+                    &nbsp;delete context.fn; <br>
+                } <br>
+                <br>
+            </h4>
+        </div>
+
+        <p>
+            6.模拟实现第三步
+        </p>
+        <i>代码已经完成80%,还有两个小点要注意：</i>
+        <ul class="list">
+            <li>1.this参数可以传null, 当为null的时候，视为指向window</li>
+            <li>2.函数是可以有返回值的</li>
+        </ul>
+        <p>6.最终版</p>
+        <div class="code_box">
+            <h4>
+                <br>
+                Function.prototype.call2 = function() { <br>
+                    &nbsp;var context = context || window; <br>
+                    &nbsp;context.fn = this; <br>
+                    <br>
+                    &nbsp;var args = []; <br>
+                    &nbsp;for(vari = 1, len = arguments.length; i < len; i++) { <br>
+                        &nbsp;&nbsp;    args.push('arguments[' + i + ']'); <br>
+                        &nbsp; } <br>
+                    <br>
+                    &nbsp;var result = eval('context.fn(' + args + ')'); <br>
+                    &nbsp;delete context.fn; <br>
+                    &nbsp;return result; <br>
+                } <br>
+                <br>
+            </h4>
+        </div>
+        <p>7.apply的模拟实现</p>
+        <div class="code_box">
+            <h4>
+                <br>
+                Function.prototype.apply2 = function(context, arr) { <br>
+                &nbsp;    var context = Object(context) || window; <br>
+                &nbsp;    context.fn = this; <br>
+                    <br>
+                    &nbsp;    var result; <br>
+                    &nbsp;    if(!arr) { <br>
+                        &nbsp;&nbsp;        result = context.fn(); <br>
+                        &nbsp;    } else { <br>
+                            &nbsp;&nbsp;       var args = []; <br>
+                            &nbsp;&nbsp;          for (var i = 0, len = arr.length; i < len; i++) { <br>
+              &nbsp;&nbsp;&nbsp;        args.push('arr[' + i + ']'); <br>
+              &nbsp;&nbsp; } <br>
+              &nbsp;&nbsp;&nbsp;          result = eval('context.fn(' + args + ')'); <br>
+              &nbsp; } <br>
+                    <br>
+                    &nbsp;   delete context.fn; <br>
+                    &nbsp;   return result; <br>
+                } <br>
+                <br>
+            </h4>
+        </div>
+
+        <p>
+            apply() 的实现基本跟call() 的实现是差不多的
+        </p>
+        <i>&nbsp;  apply(fn, [arg1, arg2])</i> <br>
+        <i>&nbsp;  call(fn, arg1, arg2)</i>
+        <p style="margin-bottom: 50px;">区别是参数的传值方式不一样</p>
+    </div>
+
+</body>
+</html>
