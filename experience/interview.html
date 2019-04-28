@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>前端面试题</title>
+    <link rel="stylesheet" href="../static/css/basic.css">
+</head>
+<body>
+   <div class="container">
+       <h1>前端面试题</h1>
+       <p>
+           一、浏览器的渲染原理
+       </p>
+       <h3>1.浏览器会解析三个东西</h3>
+       <ul class="list">
+           <li>HTML/SVG/XHTML，解析这三种文件会产生一个DOM Tree</li>
+           <li>CSS,解析CSS会产生CSS规则树</li>
+           <li>Javascript脚本，主要通过DOM API和CSSOM API来操作DOM Tree和CSS Rule Tree</li>
+       </ul>
+        <h3>2.解析完成后，浏览器引擎会通过DOM Tree和CSS Rule Tree来构造Rendering Tree，注意：</h3>
+        <ul class="list">
+            <li>Rendering Tree渲染树并不等同于DOM树</li>
+            <li>CSS的Rule Tree主要是为了完成匹配并把CSS Rule附加上Rendering Tree上的每个Element。也就是DOM节点。也就是所谓的Frame</li>
+            <li>然后，计算每个Frame（也就是每个Element）的位置，叫做layout和reflow过程</li>
+        </ul>
+        <h3>3.渲染的流程</h3>
+        <ul class="list">
+            <li>a. 计算CSS样式</li>
+            <li>b. 构建Render Tree</li>
+            <li>c. Layout-定位坐标和大小，是否换行，各种position，overflow，z-index属性。。。</li>
+            <li>d. 正式开话</li>
+        </ul>
+        <h3>4.两个概念： Reflow和Repaint</h3>
+        <ul class="list">
+            <li>Repaint---屏幕的一部分要重画，比如某个CSS的背景色变了，但是元素的几何尺寸没有变</li>
+            <li>Reflow---意味着元素的几何尺寸变了，我们，嗯需要重新验证并计算Render Tree。这就是Reflow，或是layout。reflow会从<html>这个root frame开始递归往下，一次计算所有的节点几何尺寸和位置，在reflow过程中，可能会增加一些frame,比如一个文本字符串必须被包装起来</li>
+        </ul>
+        <h3>5.产生reflow有如下几个原因：</h3>
+        <ul class="list">
+            <li>Initial.网页初始化的时候。</li>
+            <li>Incremental.一些javascript在操作DOM Tree诗。</li>
+            <li>Resize.某些元素的尺寸变了</li>
+            <li>StyleChange.如果CSS的属性发生变化了</li>
+            <li>Dirty。几个Incremental的reflow发生在同一个frame的子树上。</li>
+        </ul>
+        <i>一般来说，浏览器会把这样的操作积攒一批，然后做一次reflow，这就叫异步reflow或增量异步reflow。</i>
+        <h3>有些时候我们的脚本会阻止浏览器进行异步reflow，比如，我们请求下面的一些DOM值：</h3>
+        <ul class="list">
+            <li>
+                1. offsetTop / offsetLeft / offsetWidth / offsetHeight
+            </li>
+            <li>2. scrollTop / left / Width / Height</li>
+            <li>
+                3. clientTop / left / width / Height
+            </li>
+            <li>
+                4. IE中的getComputedStyle(), 或者currentStyle
+            </li>
+        </ul>
+        <i>因为，如果我们的程序需要这些值，那么浏览器需要返回最新的值，而这样一样会flush出去一些样式的改变，从而造成频繁的reflow / reqaint。</i>
+        <h3>6. 减少reflow / repaint</h3>
+        <i>下面是一些建议</i>
+        <ul class="list">
+            <li>
+                1.不要一条一条修改DOM的样式，与其这样，不如预定义好css的class，然后修改DOM的clasName
+            </li> 
+            <li>
+                2.把DOM离线后修改，如：
+                <ul class="list">
+                    <li>
+                        使用document.createFragment对象在内存里操作DOM
+                    </li>
+                    <li>
+                        先把DOM给display: none(又一次reflow),然后你想怎么改就怎么改，然后再把它显示出来
+                    </li>
+                    <li>
+                      clone一个DOM节点到内存里，然后想怎么改就怎么改，改完后和在线的那个DOM节点交换一下 
+                    </li>
+                </ul>
+            </li>
+            <li>
+                3.不要把DOM节点的属性值放在一个循环里当成循环里的变量。不然这回导致大量的读写这个节点的属性。
+            </li>
+            <li>
+                4.竟可能的修改层级比较低的DOM，当然，改变层级比较低的DOM有可能会造成大面积的reflow,但是也可能影响范围很小。
+            </li>
+            <li>5.为动画的HTML元素使用fixed或absolute的position,那么修改他们的CSS是不会reflow的</li>
+            <li style="margin-bottom: 50px;">6.千万不要使用table布局。因为可能很小的一个小改动会造成整个table的重新布局</li>
+        </ul>
+        <p>
+            二、渐进增强和优雅降级的概念
+        </p>
+        <ul class="list">
+            <li>
+                渐进增强(progressive enhancement)：针对低版本浏览器进行构建页面，保证最基本的功能，然后在针对浏览器进行效果、交互等改进和追加功能达到更好的用户体验
+            </li>
+            <li>
+                优雅降级(graceful degradation)：一开始就构建完整的功能，然后在针对低版本浏览器进行兼容
+            </li>
+            <li>区别：
+                <ul class="list">
+                    <li>优雅降级是从复杂的现状开始，并试图减少用户体验的供给，而渐进增强则是从一个非常基础的，能够起作用的版本开始，并不断扩充，以适应未来环境的需要。降级（功能衰减）意味着往回看，而渐进增强则意味着超前看，同时保证其根基处于安全地带。</li>
+                    <li>优雅降级观点认为应该针对那些最高级、最完善的浏览器来设计网站。而将那些被认为“过时”或有功能缺失的浏览器下的测试工作安排在开发周期的最后阶段，并把测试对象限定为主流浏览器的前一个版本</li>
+                    <li>在这种设计范例下，旧版的浏览器被认为仅能提供“简陋却无妨”的浏览体验，你可以做一些小的调整来适应某个特定的浏览器。但由于并非我们所关注的焦点，因此除了修复较大的错误之外，其他的差异将被直接忽略</li>
+                    <li>渐进增强观点则认为应关注于内容本身，内容是我们建立网站的诱因。有的网站展示它，有的则收集它，有的寻求，有的操作，还有的网站甚至会包含以上的种种，但相同点是它们全部涉及到内容。这使得“渐进增强”成为一种更为合理的设计范例。（分级式浏览器支持）</li>
+                </ul>
+            </li>
+        </ul>
+   </div>    
+</body>
+</html>
