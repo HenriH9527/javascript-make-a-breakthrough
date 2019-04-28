@@ -6,3 +6,4 @@ javascript进阶之路
 ### 2. 作用域链
 ### 3. 解读this
 ### 4. call和apply的模拟实现
+### 5. bind的模拟实现
