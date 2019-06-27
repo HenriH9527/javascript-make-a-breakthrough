@@ -77,7 +77,7 @@ Math.exp(3)                  //e的3次幂
 
 赋值操作符的优先级很低，通常在一个较长的表达式中用到了一条赋值语句的值的时候，需要补充圆括号以保证正确的运算顺序。
 
-赋值操作符的结合性是从右至左，也就是说，如果一个表达式中出现了多个赋值运算符，运算顺序是从右至左，因此，可以通过如下的方式对多个变量赋值：
+赋值操作符的结合性是从右至左，也就是说，如果一个表达式中出现了多个赋值运算符，**运算顺序是从右至左**，因此，可以通过如下的方式对多个变量赋值：
 
 ```javascript
 i = k = j = 0;
@@ -261,7 +261,7 @@ function findall(a, x){
 
 #### 保证类数组对象能拥有数组的方法
 
-```
+```javascript
 Array.join = Array.join || function(a, sep) {
 	return Array.prototype.join.call(a, sep);
 }
@@ -275,17 +275,98 @@ Array.map = Array.map || function(a, f, thisArg) {
 }
 ```
 
++ 
+
+#### 定义一个函数来确定当前脚本运行是否为严格模式。
+
+```javascript
+var strict =  (function() { return !this; })
+```
 
 
 
+凡是没有形参的构造函数调用都可以省略圆括号。
+
+```javascript
+var o = new Object();
+var o = new Object;
+```
 
 
 
+<u>*注：不定实参数的个数不能为零，arguments[]对象最适合的应用场景是在这样一类函数中，这类函数包含固定个数的命名和必需参数，以及随后个数不定的可选实参。*</u>
 
 
 
+#### 闭包
+
+> 函数体内部的变量都可以保存在函数作用域内，这种特性在计算机科学文献中称为闭包。
+>
+> 从技术角度讲，所有的javascript函数都是闭包，他们都是对象，它们都关联到作用域链。
+
+#### 模拟bind函数
+
+```javascript
+if(!Function.prototype.bind){
+	Function.prototype.bind = function(o){
+        var self = this;
+        boundArgs = arguments;
+        
+        return function() {
+            var args = [];
+            for(var i = 0; i < boundArgs.length; i++) args.push(boundArgs[i]);
+            for(var i = 0; len = arguments.length; i < len; i++) args.push(arguments[i]);
+            return self.apply(o, args);
+        }
+    }
+}
+```
 
 
+
+### 定义类的步骤
+
+1. 先定义一个构造函数，并设置初始化新对象的实例属性。
+2. 给构造函数的prototype对象定义实例的方法。
+3. 给构造函数定义类字段和类属性。
+
+
+
+可以判断值类型的type函数
+
+```javascript
+function type(o) {
+	var t, c, n;  //type class name
+    
+    //处理null值的特殊情形
+    if(o === null) return "null";
+    //另一种特殊情形，NaN和它自身不相等
+    if(o !== o) return "NaN";
+    
+    //如果tyoeof的值不”object“,则使用这个值
+    //这可以识别出原始值的类型和函数
+    if((t = typeof o) !== "Object") return t;
+    
+    //这种方式可以识别大多的内置对象
+    if(c = classof(o) !== "Object") return c;
+    
+    //如果对象构造函数的名字存在的话，则返回它
+    if(o.constructor && typeof o.constructor === "function" && (n = o.constructor.getName()))  return n;
+    
+    return "Object";
+}
+
+//返回对象的类
+function classof(o) {
+    return Object.prototype.toString.call(o).slice(8, -1);
+}
+
+//返回函数的名字（可能是空字符串） 不是函数的话返回 null
+Function.prototype.getName = function() {
+    if ("name" in this) return this.name;
+    return this.name = this.this.toString.match(/function\s*([^(]*)])\(/)/)[1];
+}
+```
 
 
 
